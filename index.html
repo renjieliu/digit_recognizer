@@ -1,0 +1,165 @@
+ <html>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script type="text/javascript">
+    var canvas, ctx, flag = false,
+        prevX = 0,
+        currX = 0,
+        prevY = 0,
+        currY = 0,
+        dot_flag = false;
+
+    var x = "#5c83b5",
+        y = 10;
+    
+    function init() {
+        canvas = document.getElementById('can');
+        ctx = canvas.getContext("2d");
+        w = canvas.width;
+        h = canvas.height;
+		clock = "";
+
+        canvas.addEventListener("mousemove", function (e) {
+            findxy('move', e)
+        }, false);
+        canvas.addEventListener("mousedown", function (e) {
+            findxy('down', e)
+        }, false);
+        canvas.addEventListener("mouseup", function (e) {
+            findxy('up', e)
+        }, false);
+        canvas.addEventListener("mouseout", function (e) {
+            findxy('out', e)
+        }, false);
+    }
+    
+ 
+	// function save() {
+	// 	document.getElementById("canvasimg").style.border = "2px solid";
+	// 	var dataURL = canvas.toDataURL();
+	// 	document.getElementById("canvasimg").src = dataURL;
+	// 	document.getElementById("canvasimg").style.display = "inline";
+	// }
+    
+    function draw() {
+	
+        ctx.beginPath();
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(currX, currY);
+        ctx.strokeStyle = x;
+        ctx.lineWidth = y;
+        ctx.stroke();
+        ctx.closePath();
+    }
+    
+
+    
+
+    function findxy(res, e) {
+        if (res == 'down') {
+			clearTimeout(clock)
+            prevX = currX;
+            prevY = currY;
+            currX = e.clientX - canvas.offsetLeft;
+            currY = e.clientY - canvas.offsetTop;
+    
+            flag = true;
+            dot_flag = true;
+            if (dot_flag) {
+                ctx.beginPath();
+                ctx.fillStyle = x;
+                ctx.fillRect(currX, currY, 2, 2);
+                ctx.closePath();
+                dot_flag = false;
+            }
+        }
+        if (res == 'up'){
+			flag = false;
+			clock = setTimeout(read, 800); //this is to trigger the read function after 1 second	
+
+		}
+
+		if (res == "out") {
+            flag = false;
+        }
+        if (res == 'move') {
+            if (flag) {
+                prevX = currX;
+                prevY = currY;
+                currX = e.clientX - canvas.offsetLeft;
+                currY = e.clientY - canvas.offsetTop;
+                draw();
+            }
+        }
+    }
+	
+    function reset() {
+		clearTimeout(clock);
+		ctx.clearRect(0, 0, w, h);
+		document.getElementById("returnedText").value = "To be recognized";
+		document.getElementById("textBase64").value = "Canvas to Base64";
+		document.getElementById("canvasimg").style.display = "None";
+
+		
+    }
+	
+	function read()
+	{
+		//alert("To be implemented!");
+		//canvas.style.border = "0";
+		//var dataURL = canvas.toDataURL();
+		var img_data = canvas.toDataURL("image/jpeg");
+		document.getElementById("textBase64").value=img_data; //put the base64 to the text box
+		//canvas.style.border = "1px solid";
+		
+		document.getElementById("returnedText").value ="Recognizing..."
+		
+		$.ajax({
+			url: "predict_digit.py",
+			type: "POST",
+			data: {"img_data":img_data},
+			success: function(response){
+				document.getElementById("returnedText").value ="Recognized as "  + response.replace("<html><head></head><body>","").replace("</body></html>","");
+			}
+		});
+
+		<!-- $.ajax({ -->
+			<!-- url: "poc.py", -->
+			<!-- type: "POST", -->
+			<!-- data: {"img_data":img_data}, -->
+			<!-- success: function(response){ -->
+				<!-- document.getElementById("returnedText").value ="Base64 length is: "  + response.replace("<html><head></head><body>","").replace("</body></html>",""); -->
+			<!-- } -->
+		<!-- }); -->
+
+		// reset(); #to clear the canvas area
+	}
+	
+	
+	
+	
+    </script>
+    <body onload="init()">
+        <canvas id="can" width="300" height="300" style="border:1px solid #b5b5b5;"></canvas>
+		<p>
+        <input type="button" value="reset" id="clr" size="23" onclick="reset()">
+		<input type="button" value="read" id="read" size="23" onclick="read()">
+		<p>
+		<input type="text" value="To be recognized" id="returnedText">
+		<p>
+		<input type="text" value="Canvas to Base64" id="textBase64"> 
+    </body>
+    </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
