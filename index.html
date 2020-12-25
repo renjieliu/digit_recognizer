@@ -74,12 +74,13 @@
         }
         if (res == 'up'){
 			flag = false;
-			clock = setTimeout(read, 800); //this is to trigger the read function after 1 second	
+			clock = setTimeout(read, 800); //this is to trigger the read function after 0.8 second	
 
 		}
 
 		if (res == "out") {
             flag = false;
+			//clock = setTimeout(read, 800); //this is to trigger the read function after 0.8 second	
         }
         if (res == 'move') {
             if (flag) {
